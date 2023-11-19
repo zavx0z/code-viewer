@@ -1,3 +1,5 @@
+import worker from "./js/worker.js"
+
 export const proto = {
     in: {},
     out: {},
@@ -6,17 +8,23 @@ export const proto = {
 
 const template = document.createElement('template')
 template.innerHTML = `
-    <link rel="stylesheet" type="text/css" href="./styles.css" />
-    <div>
-        <h2>code-viewer</h2>
+    <link rel="stylesheet" type="text/css" href="./styles/styles.css" />
+    <link rel="stylesheet" type="text/css" href="./styles/prism.css" />
+    <link rel="stylesheet" type="text/css" href="./styles/linenum.css" />
+    <pre class="line-num"><code></code>
     </div>
 `
 class Component extends HTMLElement {
     constructor() {
         super()
-        const shadowRoot = this.attachShadow({ mode: "closed" })
+        this.root = this.attachShadow({ mode: "closed" })
         let clone = template.content.cloneNode(true)
-        shadowRoot.appendChild(clone)
+
+        this.result = clone.querySelector('code')
+        const src = this.getAttribute('src')
+        if (src) worker(false, true, src, 'js').then((result) => this.result.innerHTML = result)
+
+        this.root.appendChild(clone)
     }
     static get observedAttributes() {
         return ["src", "dst"]
@@ -24,6 +32,9 @@ class Component extends HTMLElement {
     attributeChangedCallback(attrName, oldValue, newValue) {
         switch (attrName) {
             case "src":
+                if (oldValue != newValue)
+                    worker(false, true, newValue, 'js').then((result) => this.result.innerHTML = result)
+                break
             case "dst":
             default:
                 console.log(`attribute ${attrName} changed`)
