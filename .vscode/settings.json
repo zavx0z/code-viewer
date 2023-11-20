@@ -11,5 +11,9 @@
         "**/__pycache__": true,
         ".venv": true
     },
-    "hide-files.files": []
+    "hide-files.files": [
+        "node_modules"
+    ],
+    "editor.fontFamily": "JetBrains Mono",
+    "editor.fontLigatures": true
 }
