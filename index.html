@@ -1,42 +1,42 @@
 <html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>code-viewer</title>
+    <script src="//cdn.jsdelivr.net/npm/eruda"></script>
+    <script>
+      eruda.init()
+    </script>
+    <style>
+      body {
+        background-color: #1b2634;
+      }
 
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>code-viewer</title>
-  <style>
-    body {
-      background-color: #1b2634;
-    }
-
-    h1 {
-      color: aqua;
-    }
-  </style>
-  <script type="module" async defer>
-    const { proto } = await import("./component.js")
-    const codeViewer = document.querySelector("code-viewer")
-    const textarea = document.querySelector("textarea")
-    function init() {
-      textarea.value = codeViewer.src
-      const persistence = localStorage.getItem("code-viewer-src")
-      persistence ?
-        textarea.value = codeViewer.src = JSON.parse(persistence) :
+      h1 {
+        color: aqua;
+      }
+    </style>
+    <script type="module" async defer>
+      const { proto } = await import("./component.js")
+      const codeViewer = document.querySelector("code-viewer")
+      const textarea = document.querySelector("textarea")
+      function init() {
         textarea.value = codeViewer.src
-    }
-    init()
-    function changeHandler(event) {
-      codeViewer.src = event.target.value
-      localStorage.setItem("code-viewer-src", JSON.stringify(event.target.value))
-    }
-    textarea.addEventListener("change", changeHandler)
-  </script>
-</head>
+        const persistence = localStorage.getItem("code-viewer-src")
+        persistence ? (textarea.value = codeViewer.src = JSON.parse(persistence)) : (textarea.value = codeViewer.src)
+      }
+      init()
+      function changeHandler(event) {
+        codeViewer.src = event.target.value
+        localStorage.setItem("code-viewer-src", JSON.stringify(event.target.value))
+      }
+      textarea.addEventListener("change", changeHandler)
+    </script>
+  </head>
 
-<body>
-  <h1>code-viewer</h1>
-  <textarea cols="80" rows="4" name="codeSrc"></textarea>
-  <code-viewer src=""></code-viewer>
-</body>
-
+  <body>
+    <h1>code-viewer</h1>
+    <textarea cols="80" rows="4" name="codeSrc"></textarea>
+    <code-viewer src=""></code-viewer>
+  </body>
 </html>
