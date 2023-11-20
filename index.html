@@ -4,24 +4,25 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>code-viewer</title>
     <script src="//cdn.jsdelivr.net/npm/eruda"></script>
-    <script type="module" src="./dev/devTools.js"/> </script>
+    <script type="module" src="./dev/devTools.js"></script>
     <link rel="stylesheet" type="text/css" href="./dev/styles.css" />
     <script type="module" async defer>
       const { proto } = await import("./component.js")
+
       const codeViewer = document.querySelector("code-viewer")
+      const handleResult = ({ detail }) => console.log(detail)
+      codeViewer.addEventListener("output", handleResult)
+
       const textarea = document.querySelector("textarea")
       function init() {
         textarea.value = codeViewer.src
         const persistence = localStorage.getItem("code-viewer-src")
-        persistence
-          ? (textarea.value = codeViewer.src = JSON.parse(persistence))
-          : (textarea.value = codeViewer.src)
+        persistence ? (textarea.value = codeViewer.src = JSON.parse(persistence)) : (textarea.value = codeViewer.src)
       }
       init()
       function changeHandler(event) {
-        console.log(event.target.dst)
         codeViewer.src = event.target.value
-        localStorage.setItem( "code-viewer-src", JSON.stringify(event.target.value) )
+        localStorage.setItem("code-viewer-src", JSON.stringify(event.target.value))
       }
       textarea.addEventListener("change", changeHandler)
     </script>

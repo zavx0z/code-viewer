@@ -1,7 +1,7 @@
 import worker from "./js/worker.js"
 export const proto = {
-  in: {},
-  out: {},
+  input: {},
+  output: {},
   prop: {},
 }
 const template = document.createElement("template")
@@ -20,10 +20,8 @@ class Component extends HTMLElement {
 
     this.result = clone.querySelector("code")
     const src = this.getAttribute("src")
-    if (src)
-      worker(false, true, src, "js").then(
-        (result) => (this.result.innerHTML = result)
-      )
+
+    if (src) worker(false, true, src, "js").then((result) => (this.result.innerHTML = result))
 
     this.root.appendChild(clone)
   }
@@ -33,13 +31,16 @@ class Component extends HTMLElement {
   attributeChangedCallback(attrName, oldValue, newValue) {
     switch (attrName) {
       case "src":
-        if (oldValue != newValue) {
-          worker(false, true, newValue, "js").then(
-            (result) => (this.result.innerHTML = result)
-          )
+        if (oldValue !== newValue) {
+          worker(false, true, newValue, "js").then((result) => {
+            this.result.innerHTML = result
+            this.setAttribute("dst", result)
+          })
         }
         break
       case "dst":
+        if (oldValue !== newValue) this.dispatchEvent(new CustomEvent("output", { detail: newValue }))
+        break
       default:
         console.log(`attribute ${attrName} changed`)
     }
