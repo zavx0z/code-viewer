@@ -5,11 +5,20 @@
     <title>code-viewer</title>
     <script src="//cdn.jsdelivr.net/npm/eruda"></script>
     <script>
-      eruda.init({ default: { displaySize: 40, transparency: 1, theme: "Material Oceanic" } })
+      eruda.init({
+        default: {
+          displaySize: 40,
+          transparency: 1,
+          theme: "Material Oceanic",
+        },
+      })
       if (localStorage.getItem("eruda-active") === "true") eruda.show()
       eruda._entryBtn._$el[0].addEventListener("click", (event) => {
         setTimeout(() => {
-          const active = eruda._$el[0].children[0].style.display === "block" ? "true" : "false"
+          const active =
+            eruda._$el[0].children[0].style.display === "block"
+              ? "true"
+              : "false"
           localStorage.setItem("eruda-active", active)
         }, 300)
       })
@@ -18,7 +27,6 @@
       body {
         background-color: #1b2634;
       }
-
       h1 {
         color: aqua;
       }
@@ -30,12 +38,17 @@
       function init() {
         textarea.value = codeViewer.src
         const persistence = localStorage.getItem("code-viewer-src")
-        persistence ? (textarea.value = codeViewer.src = JSON.parse(persistence)) : (textarea.value = codeViewer.src)
+        persistence
+          ? (textarea.value = codeViewer.src = JSON.parse(persistence))
+          : (textarea.value = codeViewer.src)
       }
       init()
       function changeHandler(event) {
         codeViewer.src = event.target.value
-        localStorage.setItem("code-viewer-src", JSON.stringify(event.target.value))
+        localStorage.setItem(
+          "code-viewer-src",
+          JSON.stringify(event.target.value)
+        )
       }
       textarea.addEventListener("change", changeHandler)
     </script>

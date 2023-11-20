@@ -1,12 +1,10 @@
 import worker from "./js/worker.js"
-
 export const proto = {
-    in: {},
-    out: {},
-    prop: {}
+  in: {},
+  out: {},
+  prop: {},
 }
-
-const template = document.createElement('template')
+const template = document.createElement("template")
 template.innerHTML = `
     <link rel="stylesheet" type="text/css" href="./styles/styles.css" />
     <link rel="stylesheet" type="text/css" href="./styles/prism.css" />
@@ -15,34 +13,45 @@ template.innerHTML = `
     </div>
 `
 class Component extends HTMLElement {
-    constructor() {
-        super()
-        this.root = this.attachShadow({ mode: "closed" })
-        let clone = template.content.cloneNode(true)
+  constructor() {
+    super()
+    this.root = this.attachShadow({ mode: "closed" })
+    let clone = template.content.cloneNode(true)
 
-        this.result = clone.querySelector('code')
-        const src = this.getAttribute('src')
-        if (src) worker(false, true, src, 'js').then((result) => this.result.innerHTML = result)
+    this.result = clone.querySelector("code")
+    const src = this.getAttribute("src")
+    if (src)
+      worker(false, true, src, "js").then(
+        (result) => (this.result.innerHTML = result)
+      )
 
-        this.root.appendChild(clone)
-    }
-    static get observedAttributes() {
-        return ["src", "dst"]
-    }
-    attributeChangedCallback(attrName, oldValue, newValue) {
-        switch (attrName) {
-            case "src":
-                if (oldValue != newValue)
-                    worker(false, true, newValue, 'js').then((result) => this.result.innerHTML = result)
-                break
-            case "dst":
-            default:
-                console.log(`attribute ${attrName} changed`)
+    this.root.appendChild(clone)
+  }
+  static get observedAttributes() {
+    return ["src", "dst"]
+  }
+  attributeChangedCallback(attrName, oldValue, newValue) {
+    switch (attrName) {
+      case "src":
+        if (oldValue != newValue) {
+          worker(false, true, newValue, "js").then(
+            (result) => (this.result.innerHTML = result)
+          )
         }
+        break
+      case "dst":
+      default:
+        console.log(`attribute ${attrName} changed`)
     }
-    get src() { return this.getAttribute("src") }
-    set src(value) { this.setAttribute("src", value) }
-    get dst() { return this.getAttribute("dst") }
+  }
+  get src() {
+    return this.getAttribute("src")
+  }
+  set src(value) {
+    this.setAttribute("src", value)
+  }
+  get dst() {
+    return this.getAttribute("dst")
+  }
 }
 customElements.define("code-viewer", Component)
-
