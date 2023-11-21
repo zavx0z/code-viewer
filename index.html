@@ -13,10 +13,6 @@
       const actor = document.querySelector("code-viewer")
       document.querySelector("h1").textContent = actor.name
 
-      const textarea = document.querySelector("textarea")
-      const linenoCheckBox = document.getElementById("lineno")
-      const foldCheckBox = document.getElementById("fold")
-
       let persistence = localStorage.getItem("code-viewer")
       if (persistence) actor.state = JSON.parse(persistence)
 
@@ -24,37 +20,77 @@
         localStorage.setItem("code-viewer", JSON.stringify(snapshot))
       })
 
-      document.querySelector('label[for="src"]').innerText = actor.input.src.name.ru
-      document.querySelector('label[for="lineno"]').innerText = actor.input.lineno.name.ru
-      document.querySelector('label[for="fold"]').innerText = actor.input.fold.name.ru
+      if (Object.keys(actor.input).length) {
+        const boolParams = Object.keys(actor.input).filter((key) => actor.input[key].type === "Boolean")
 
-      const process = () =>
-        actor.send({ lineno: linenoCheckBox.checked, fold: foldCheckBox.checked, src: textarea.value })
+        const inputForm = document.createElement("form")
+        inputForm.className = "input-form"
+        inputForm.action = ""
+        inputForm.method = "post"
 
-      textarea.addEventListener("change", process)
-      linenoCheckBox.addEventListener("change", process)
-      foldCheckBox.addEventListener("change", process)
+        Object.entries(actor.input).forEach(([key, socket]) => {
+          console.log(key, socket)
+          console.log(socket.type)
 
-      linenoCheckBox.checked = actor.input.lineno.value
-      foldCheckBox.checked = actor.input.fold.value
-      textarea.value = actor.input.src.value
+          const div = document.createElement("div")
+          const label = document.createElement("label")
+          switch (socket.type) {
+            case "Boolean":
+              const checkbox = document.createElement("input")
+              checkbox.type = "checkbox"
+              checkbox.name = key
+              checkbox.id = key
+              checkbox.checked = socket.value
+              checkbox.onchange = () => inputForm.requestSubmit()
+              div.appendChild(checkbox)
+
+              label.for = key
+              label.textContent = socket.name.ru
+
+              div.appendChild(label)
+              inputForm.appendChild(div)
+              break
+            case "String":
+              const textarea = document.createElement("textarea")
+              textarea.name = key
+              textarea.id = key
+              textarea.value = socket.value
+              textarea.cols = 80
+              textarea.rows = 4
+              textarea.onchange = () => inputForm.requestSubmit()
+              div.appendChild(textarea)
+
+              label.for = key
+              div.appendChild(label)
+
+              inputForm.appendChild(div)
+              break
+            default:
+              break
+          }
+        })
+        inputForm.addEventListener("submit", (e) => {
+          e.preventDefault()
+          const formData = new FormData(e.target)
+
+          let obj = {}
+          for (const [key, value] of formData) {
+            obj[key] = value === "on" ? true : value
+          }
+          boolParams.forEach((key) => {
+            if (!obj.hasOwnProperty(key)) obj[key] = false
+          })
+          actor.send(obj)
+          return false
+        })
+
+        actor.parentElement.insertBefore(inputForm, actor)
+      }
     </script>
   </head>
 
   <body>
     <h1></h1>
-    <div>
-      <input type="checkbox" id="lineno" name="lineno" checked />
-      <label for="lineno"></label>
-    </div>
-    <div>
-      <input type="checkbox" id="fold" name="fold" checked />
-      <label for="fold"></label>
-    </div>
-    <div>
-      <label for="src"></label>
-      <textarea cols="80" rows="4" id="src" name="codeSrc"></textarea>
-    </div>
     <code-viewer />
   </body>
 </html>

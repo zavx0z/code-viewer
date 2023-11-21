@@ -8,9 +8,9 @@ template.innerHTML = `
 class CodeViewer extends HTMLElement {
   name = "Подсветка синтаксиса кода"
   input = {
-    src: { name: { ru: "Код", }, type: String, value: "" },
-    fold: { name: { ru: "Свертки строк", }, type: Boolean, value: false },
-    lineno: { name: { ru: "Номера строк", }, type: Boolean, value: true },
+    src: { name: { ru: "Код", }, type: "String", value: "" },
+    lineno: { name: { ru: "Номера строк", }, type: "Boolean", value: true },
+    fold: { name: { ru: "Свертки строк", }, type: "Boolean", value: false },
   }
   output = {
     dst: { name: { ru: "Код", }, type: String, value: "" },
