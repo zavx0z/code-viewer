@@ -1,48 +1,68 @@
 import worker from "./js/worker.js"
-export const proto = {
-  input: {},
-  output: {},
-  prop: {},
+export let proto = {
+  title: "Подсветка синтаксиса кода",
+  input: {
+    src: {
+      title: "Код",
+      type: "Text",
+      default: "",
+    },
+    fold: {
+      title: "Свертки строк",
+      type: "Boolean",
+      default: false,
+    },
+    lineno: {
+      title: "Номера строк",
+      type: "Boolean",
+      default: true,
+    },
+  },
+  output: {
+    dst: {
+      title: "Код",
+      type: "Text",
+      default: "",
+    },
+  },
 }
 const template = document.createElement("template")
 template.innerHTML = `
     <link rel="stylesheet" type="text/css" href="./styles/styles.css" />
     <link rel="stylesheet" type="text/css" href="./styles/prism.css" />
     <link rel="stylesheet" type="text/css" href="./styles/linenum.css" />
-    <pre class="line-num"><code></code>
-    </div>
+    <pre class="line-num"><code></code></pre>
 `
 class Component extends HTMLElement {
   constructor() {
     super()
     this.root = this.attachShadow({ mode: "closed" })
     let clone = template.content.cloneNode(true)
-
     this.result = clone.querySelector("code")
-    const src = this.getAttribute("src")
-
-    if (src) worker(false, true, src, "js").then((result) => (this.result.innerHTML = result))
-
     this.root.appendChild(clone)
   }
   static get observedAttributes() {
-    return ["src", "dst"]
+    return ["src", "lineno", "fold", "dst"]
+  }
+  connectedCallback() {
+    if (this.src) {
+      setTimeout(() => console.log("connectedCallback"), 1000)
+      worker(this.fold, this.lineno, this.src, "js")
+        .then((result) => (this.dst = result))
+        .then(() => this.dispatchEvent(new CustomEvent("output", { detail: this.dst })))
+    }
   }
   attributeChangedCallback(attrName, oldValue, newValue) {
-    switch (attrName) {
-      case "src":
-        if (oldValue !== newValue) {
-          worker(false, true, newValue, "js").then((result) => {
-            this.result.innerHTML = result
-            this.setAttribute("dst", result)
-          })
-        }
-        break
-      case "dst":
-        if (oldValue !== newValue) this.dispatchEvent(new CustomEvent("output", { detail: newValue }))
-        break
-      default:
-        console.log(`attribute ${attrName} changed`)
+    // console.log("attributeChangedCallback", attrName)
+    if (attrName === "dst") {
+      // console.log(oldValue, newValue)
+    }
+    if (oldValue !== newValue && attrName !== "dst") {
+      console.log(attrName, oldValue, newValue, oldValue !== newValue)
+      this[attrName] = newValue
+      worker(this.fold, this.lineno, this.src, "js")
+        .then((result) => (this.dst = result))
+        .then(() => this.dispatchEvent(new CustomEvent("output", { detail: this.dst })))
     }
   }
   get src() {
@@ -51,8 +71,24 @@ class Component extends HTMLElement {
   set src(value) {
     this.setAttribute("src", value)
   }
+  get lineno() {
+    return this.getAttribute("lineno") === "true"
+  }
+  set lineno(value) {
+    this.setAttribute("lineno", value)
+  }
+  get fold() {
+    return this.getAttribute("fold") === "true"
+  }
+  set fold(value) {
+    this.setAttribute("fold", value)
+  }
   get dst() {
     return this.getAttribute("dst")
+  }
+  set dst(value) {
+    this.result.innerHTML = value
+    this.setAttribute("dst", value)
   }
 }
 customElements.define("code-viewer", Component)

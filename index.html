@@ -7,30 +7,43 @@
     <script type="module" src="./dev/devTools.js"></script>
     <link rel="stylesheet" type="text/css" href="./dev/styles.css" />
     <script type="module" async defer>
-      const { proto } = await import("./component.js")
-
+      // const { proto } = await import("./component.js")
+      const { proto } = await import("https://zavx0z.github.io/code-viewer/component.js")
+      console.log(proto)
       const codeViewer = document.querySelector("code-viewer")
       const handleResult = ({ detail }) => console.log(detail)
-      codeViewer.addEventListener("output", handleResult)
+      // codeViewer.addEventListener("output", handleResult)
 
       const textarea = document.querySelector("textarea")
-      function init() {
-        textarea.value = codeViewer.src
-        const persistence = localStorage.getItem("code-viewer-src")
-        persistence ? (textarea.value = codeViewer.src = JSON.parse(persistence)) : (textarea.value = codeViewer.src)
-      }
-      init()
+
+      const persistence = localStorage.getItem("code-viewer-src")
+      persistence ? (textarea.value = codeViewer.src = JSON.parse(persistence)) : (textarea.value = codeViewer.src)
+
       function changeHandler(event) {
         codeViewer.src = event.target.value
         localStorage.setItem("code-viewer-src", JSON.stringify(event.target.value))
       }
       textarea.addEventListener("change", changeHandler)
+
+      const lineno = document.getElementById("lineno")
+      lineno.addEventListener("change", (event) => {
+        codeViewer.lineno = event.target.checked
+      })
+      lineno.checked = codeViewer.lineno
     </script>
   </head>
 
   <body>
     <h1>code-viewer</h1>
+    <div>
+      <input type="checkbox" id="lineno" name="lineno" checked />
+      <label for="lineno">lineno</label>
+    </div>
+    <div>
+      <input type="checkbox" id="fold" name="fold" checked />
+      <label for="fold">fold</label>
+    </div>
     <textarea cols="80" rows="4" name="codeSrc"></textarea>
-    <code-viewer src=""></code-viewer>
+    <code-viewer/>
   </body>
 </html>

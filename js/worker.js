@@ -11,6 +11,7 @@ Prism.hooks.add("before-all-elements-highlight", ({ elements }) => {
 })
 
 export default async function process(fold, lineno, text, language) {
+    console.log("Proccess code-viewer")
     const elementPre = document.createElement("pre")
     elementPre.className = `language-${language}`
     if (lineno) elementPre.className += " line-numbers"
