@@ -2,7 +2,7 @@ import "https://cdn.jsdelivr.net/npm/prismjs@1.29.0/prism.min.js"
 import "https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-javascript.js"
 import "https://cdn.jsdelivr.net/npm/prismjs@1.29.0/plugins/keep-markup/prism-keep-markup.js"
 import "https://cdn.jsdelivr.net/npm/prismjs@1.29.0/plugins/line-numbers/prism-line-numbers.js"
-import { insertFolds } from "./fold.js"
+import { insertFolds } from "./lib/fold.js"
 
 let Prism = window.Prism
 Prism.manual = true
