@@ -3,15 +3,14 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>code-viewer</title>
-    <script src="//cdn.jsdelivr.net/npm/eruda"></script>
-    <script type="module" src="./dev/devTools.js"></script>
+    <!-- <script src="//cdn.jsdelivr.net/npm/eruda"></script>
+    <script type="module" src="./dev/devTools.js"></script> -->
     <link rel="stylesheet" type="text/css" href="./dev/styles.css" />
     <script type="module" async defer>
       // const { proto } = await import("https://zavx0z.github.io/code-viewer/index.js")
       await import("./index.js")
 
       const actor = document.querySelector("code-viewer")
-      console.log(actor)
       document.querySelector("h1").textContent = actor.name
 
       const textarea = document.querySelector("textarea")
@@ -22,28 +21,15 @@
       if (persistence) actor.state = JSON.parse(persistence)
 
       actor.subscribe((snapshot) => {
-        localStorage.setItem(
-          "code-viewer",
-          JSON.stringify({
-            input: {
-              src: textarea.value,
-              lineno: linenoCheckBox.checked,
-              fold: foldCheckBox.checked,
-            },
-            output: {
-              dst: snapshot,
-            },
-          })
-        )
+        localStorage.setItem("code-viewer", JSON.stringify(snapshot))
       })
 
       document.querySelector('label[for="src"]').innerText = actor.input.src.name.ru
       document.querySelector('label[for="lineno"]').innerText = actor.input.lineno.name.ru
       document.querySelector('label[for="fold"]').innerText = actor.input.fold.name.ru
 
-      function process() {
+      const process = () =>
         actor.send({ lineno: linenoCheckBox.checked, fold: foldCheckBox.checked, src: textarea.value })
-      }
 
       textarea.addEventListener("change", process)
       linenoCheckBox.addEventListener("change", process)
