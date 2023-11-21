@@ -10,38 +10,56 @@
       // const { proto } = await import("https://zavx0z.github.io/code-viewer/index.js")
       const { proto } = await import("./index.js")
       const { src, fold, lineno } = proto.input
+      document.querySelector("h1").textContent = proto.title
 
       const codeViewer = document.querySelector("code-viewer")
-
       const textarea = document.querySelector("textarea")
       const linenoCheckBox = document.getElementById("lineno")
       const foldCheckBox = document.getElementById("fold")
 
-      const persistence = localStorage.getItem("code-viewer-src")
-      persistence ? (textarea.value = codeViewer.src = JSON.parse(persistence)) : (textarea.value = codeViewer.src)
+      let persistence = localStorage.getItem("code-viewer")
+      
+      codeViewer.subscribe((result) => {
+        localStorage.setItem(
+          "code-viewer",
+          JSON.stringify({
+            input: {
+              src: textarea.value,
+              lineno: linenoCheckBox.checked,
+              fold: foldCheckBox.checked,
+            },
+            output: {
+              dst: result,
+            },
+          })
+        )
+      })
 
       document.querySelector('label[for="src"]').innerText = src.title.ru
       document.querySelector('label[for="lineno"]').innerText = lineno.title.ru
       document.querySelector('label[for="fold"]').innerText = fold.title.ru
 
-      if (persistence) {
+      function process() {
+        codeViewer.send({ lineno: linenoCheckBox.checked, fold: foldCheckBox.checked, src: textarea.value })
       }
 
-      linenoCheckBox.checked = codeViewer.lineno = lineno.default
-      foldCheckBox.checked = codeViewer.fold = fold.default
-      textarea.value = codeViewer.src = JSON.parse(persistence)
+      textarea.addEventListener("change", process)
+      linenoCheckBox.addEventListener("change", process)
+      foldCheckBox.addEventListener("change", process)
+      if (persistence) {
+        persistence = JSON.parse(persistence)
+        linenoCheckBox.checked = persistence.input.lineno
+        foldCheckBox.checked = persistence.input.fold
+        textarea.value = persistence.input.src
+        codeViewer.preview = persistence.output.dst
+      } else {
+        linenoCheckBox.checked = lineno.default
+        foldCheckBox.checked = fold.default
+        textarea.value = src.default
+        process()
+      }
 
-      linenoCheckBox.addEventListener("change", (event) => {
-        codeViewer.lineno = event.target.checked
-      })
-      textarea.addEventListener("change", (event) => {
-        codeViewer.src = event.target.value
-        localStorage.setItem("code-viewer-src", JSON.stringify(event.target.value))
-      })
-      codeViewer.addEventListener("complete", ({ detail }) => {
-        codeViewer.style.visibility = "visible"
-      })
-
+      codeViewer.style.visibility = "visible"
       textarea.parentElement.style.visibility = "visible"
       linenoCheckBox.parentElement.style.visibility = "visible"
       foldCheckBox.parentElement.style.visibility = "visible"
@@ -49,7 +67,7 @@
   </head>
 
   <body>
-    <h1>code-viewer</h1>
+    <h1></h1>
     <div style="visibility: hidden">
       <input type="checkbox" id="lineno" name="lineno" checked />
       <label for="lineno"></label>
