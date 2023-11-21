@@ -1,5 +1,4 @@
 import worker from "./worker.js"
-import proto from "./proto.js"
 
 const template = document.createElement("template")
 template.innerHTML = `
@@ -7,6 +6,41 @@ template.innerHTML = `
     <pre class="line-num"><code></code></pre>
 `
 class CodeViewer extends HTMLElement {
+  name = "Подсветка синтаксиса кода"
+  input = {
+    src: {
+      name: {
+        ru: "Код",
+      },
+      type: String,
+      value: "",
+    },
+    fold: {
+      name: {
+        ru: "Свертки строк",
+      },
+      type: Boolean,
+      value: false,
+    },
+    lineno: {
+      name: {
+        ru: "Номера строк",
+      },
+      type: Boolean,
+      value: true,
+    },
+  }
+  output = {
+    dst: {
+      name: {
+        ru: "Код",
+      },
+      type: String,
+      value: "",
+    },
+  }
+  property = {}
+
   constructor() {
     super()
     this.root = this.attachShadow({ mode: "closed" })
@@ -14,16 +48,15 @@ class CodeViewer extends HTMLElement {
     this._preview = clone.querySelector("code")
     this.root.appendChild(clone)
   }
-  static get observedAttributes() {
-    return []
-  }
   connectedCallback() {}
   attributeChangedCallback(attrName, oldValue, newValue) {}
   /**
-   * @param {String} value
+   * @param {any} value
    */
-  set preview(value) {
-    this._preview.innerHTML = value
+  set state({ input, output, property }) {
+    console.log(value)
+    this.output = output
+    this._preview.innerHTML = output.dst.value
   }
   send({
     fold = proto.input.fold.default,
@@ -33,12 +66,12 @@ class CodeViewer extends HTMLElement {
   }) {
     worker(fold, lineno, src, lang).then((result) => {
       this._preview.innerHTML = result
+      this.output.dst.value = result
       this.dispatchEvent(new CustomEvent("complete", { detail: result }))
     })
   }
   subscribe(cb) {
-    this.addEventListener("complete", ({ detail }) => cb(detail))
+    this.addEventListener("complete", () => cb({ input: this.input, output: this.output, property: this.property }))
   }
 }
 customElements.define(proto.tag, CodeViewer)
-export { proto }
