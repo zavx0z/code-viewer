@@ -6,91 +6,60 @@
     <!-- <script src="//cdn.jsdelivr.net/npm/eruda"></script>
     <script type="module" src="./dev/devTools.js"></script> -->
     <link rel="stylesheet" type="text/css" href="./dev/styles.css" />
-    <script type="module" async defer>
-      // const { proto } = await import("https://zavx0z.github.io/code-viewer/index.js")
+    <script type="module" async>
+      const html = String.raw
+      const url = "https://zavx0z.github.io/code-viewer/index.js"
+      const tagname = url.match(/\.github\.io\/(.*?)\//)[1]
       await import("./index.js")
 
-      const actor = document.querySelector("code-viewer")
-      document.querySelector("h1").textContent = actor.name
-
+      const actor = document.createElement(tagname)
       let persistence = localStorage.getItem("code-viewer")
-      if (persistence) actor.state = JSON.parse(persistence)
+      persistence && (actor.state = JSON.parse(persistence))
 
-      actor.subscribe((snapshot) => {
-        localStorage.setItem("code-viewer", JSON.stringify(snapshot))
+      const template = document.createElement("template")
+      template.innerHTML = html`
+        <h1>${actor.name}</h1>
+        <form>
+          ${Object.entries(actor.input)
+            .map(([key, socket]) => {
+              switch (socket.type) {
+                case "Boolean":
+                  return html`
+                    <div>
+                      <input type="checkbox" id="${key}" name="${key}" ${socket.value ? "checked" : ""} />
+                      <label for="${key}">${socket.name.ru}</label>
+                    </div>
+                  `
+                case "String":
+                  return html`
+                    <div>
+                      <label for="${key}">${socket.name.ru}</label>
+                      <textarea cols="80" rows="4" id="${key}" name="${key}"> ${socket.value} </textarea>
+                    </div>
+                  `
+                default:
+                  return ""
+              }
+            })
+            .join("")}
+        </form>
+      `
+      actor.subscribe((snapshot) => localStorage.setItem("code-viewer", JSON.stringify(snapshot)))
+      template.content.querySelector("form").addEventListener("change", (e) => {
+        e.preventDefault()
+        const formData = new FormData(e.currentTarget)
+        const props = {}
+        for (const key in actor.input) {
+          const value = formData.get(key)
+          if (actor.input[key].type === "Boolean") {
+            props[key] = value === "on"
+          } else props[key] = value
+        }
+        actor.send(props)
       })
-
-      if (Object.keys(actor.input).length) {
-        const boolParams = Object.keys(actor.input).filter((key) => actor.input[key].type === "Boolean")
-
-        const inputForm = document.createElement("form")
-        inputForm.className = "input-form"
-        inputForm.action = ""
-        inputForm.method = "post"
-
-        Object.entries(actor.input).forEach(([key, socket]) => {
-          console.log(key, socket)
-          console.log(socket.type)
-
-          const div = document.createElement("div")
-          const label = document.createElement("label")
-          switch (socket.type) {
-            case "Boolean":
-              const checkbox = document.createElement("input")
-              checkbox.type = "checkbox"
-              checkbox.name = key
-              checkbox.id = key
-              checkbox.checked = socket.value
-              checkbox.onchange = () => inputForm.requestSubmit()
-              div.appendChild(checkbox)
-
-              label.for = key
-              label.textContent = socket.name.ru
-
-              div.appendChild(label)
-              inputForm.appendChild(div)
-              break
-            case "String":
-              const textarea = document.createElement("textarea")
-              textarea.name = key
-              textarea.id = key
-              textarea.value = socket.value
-              textarea.cols = 80
-              textarea.rows = 4
-              textarea.onchange = () => inputForm.requestSubmit()
-              div.appendChild(textarea)
-
-              label.for = key
-              div.appendChild(label)
-
-              inputForm.appendChild(div)
-              break
-            default:
-              break
-          }
-        })
-        inputForm.addEventListener("submit", (e) => {
-          e.preventDefault()
-          const formData = new FormData(e.target)
-
-          let obj = {}
-          for (const [key, value] of formData) {
-            obj[key] = value === "on" ? true : value
-          }
-          boolParams.forEach((key) => {
-            if (!obj.hasOwnProperty(key)) obj[key] = false
-          })
-          actor.send(obj)
-          return false
-        })
-
-        actor.parentElement.insertBefore(inputForm, actor)
-      }
+      template.content.appendChild(actor)
+      document.body.appendChild(template.content)
     </script>
   </head>
-
-  <body>
-    <h1></h1>
-    <code-viewer />
-  </body>
+  <body></body>
 </html>
