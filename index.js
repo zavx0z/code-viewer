@@ -1,11 +1,6 @@
 import worker from "./worker.js"
 
-const template = Object.assign(document.createElement("template"), {
-  innerHTML: /*html*/ `
- <link rel="stylesheet" type="text/css" href="./styles.css" />
- <pre class="line-num"><code></code></pre>
-`
-})
+const template = Object.assign(document.createElement("template"), { innerHTML: /*html*/ ` <pre class="line-num"><code></code></pre> ` })
 
 class CodeViewer extends HTMLElement {
   name = "Подсветка синтаксиса кода"
@@ -18,12 +13,12 @@ class CodeViewer extends HTMLElement {
     dst: { name: { ru: "Код", }, type: String, value: "" },
   }
   property = {}
-
   constructor() {
     super()
-    const root = this.attachShadow({ mode: "closed" })
+    const shadow = this.attachShadow({ mode: "closed" })
+    shadow.innerHTML = /*html*/ `<link rel="stylesheet" type="text/css" href="./styles.css" />`
     this._preview = template.content.querySelector("code")
-    root.appendChild(template.content)
+    shadow.appendChild(template.content)
   }
   connectedCallback() { }
   attributeChangedCallback(attrName, oldValue, newValue) {
